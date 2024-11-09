@@ -1,3 +1,5 @@
+import os
+
 class File:
     def __init__(self, name, files=None):
         self.name = name
@@ -41,10 +43,12 @@ my_dir = File('root', files=[
 
 # Write a recursive function to print just the files (non directories)
 def print_files(file):
-    # what's the recursive case?
-    # what's the base case (how do we know to stop recursing)?
-    # when should we print?
-    pass
+    if not file.is_dir:
+        print(file.name)
+    else:
+        #process for the children
+        for child in file.files:
+            print_files(child)
 
 print("== print_files ==")
 print_files(my_dir)
@@ -57,10 +61,11 @@ print_files(my_dir)
 
 # Write a recursive function to print just the directories
 def print_dirs(file):
-    # what's the recursive case?
-    # what's the base case (how do we know to stop recursing)?
-    # when should we print?
-    pass
+    if file.is_dir:
+        print(file.name)
+        #process for the children
+        for child in file.files:
+            print_dirs(child)
 
 print("== print_dirs ==")
 print_dirs(my_dir)
@@ -73,8 +78,11 @@ print_dirs(my_dir)
 # blanket
 # journey
 
-#
-# CHALLENGING QUESTION
+def tree_traverse(file, op=lambda f: print(f.name)):
+    op(file)
+    
+    pass
+    
 #############################
 
 # Write a recursive function to print an indented view of the structure
@@ -86,9 +94,12 @@ def print_indented(file, depth=0):
     # how do we update the depth passed in the parameters?
 
     # the following code can be used to build the indentation based on the depth
-    # indent = "    " * depth
-    
-    pass
+    indent = "    " * depth
+    print(f"{indent}{file.name}")
+    if file.is_dir:
+        #process for the children
+        for child in file.files:
+            print_indented(child, depth + 1)
 
 print("== print_indented ==")
 print_indented(my_dir)
@@ -133,6 +144,19 @@ def print_tree(file, has_next=None):
     has_next = has_next or []  # init to new empty list if default
 
     depth = len(has_next)  # the length of the list indicates how deep we are in the hierarchy
+    indent = ""
+    for i, next in enumerate(has_next[:-1]):
+        indent += "│   " if next else "    "
+    if has_next:
+        indent += "├── " if has_next[-1] else "└── "
+
+    print(f"{indent}{file.name}")
+
+    # If it's a directory, recurse into its files
+    if file.is_dir:
+        for i, f in enumerate(file.files):
+            is_last = i == len(file.files) - 1
+            print_tree(f, has_next + [not is_last])
 
     # how can we build up the symbols used to draw the lines
     # the following characters should be used: │ ├ ─ └
@@ -170,7 +194,23 @@ print_tree(my_dir)
 # use for comparison! tree can be installed through homebrew.)
 
 def dirtree(path, has_next=None):
-    pass
+    has_next = has_next or []
+    depth = len(has_next)
+    # Construct the indentation with appropriate tree symbols
+    indent = ""
+    for i, next in enumerate(has_next[:-1]):
+        indent += "│   " if next else "    "
+    if has_next:
+        indent += "├── " if has_next[-1] else "└── "
+    
+    print(f"{indent}{os.path.basename(path)}")
+
+    # If it's a directory, recurse into its contents
+    if os.path.isdir(path):
+        items = sorted(os.listdir(path))
+        for i, item in enumerate(items):
+            is_last = i == len(items) - 1
+            dirtree(os.path.join(path, item), has_next + [not is_last])
 
 print("== dirtree ==")
 dirtree(".")
